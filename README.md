@@ -7,7 +7,6 @@ StreamVibe is a modern video streaming web application built with React (Vite) f
 - **User Authentication** (Login, Signup)
 - **Video Upload & Streaming**
 - **Like & Comment System**
-- **Dark Mode Support**
 - **Responsive UI with Tailwind CSS**
 - **Optimized Performance with Vite**
 - **Django Backend API for Data Management**
