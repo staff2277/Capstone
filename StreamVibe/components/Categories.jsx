@@ -1,10 +1,13 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import clsx from "clsx";
 import PropTypes from "prop-types";
+import MovieDetailsModal from "./MovieDetailsModal";
 
 const Categories = ({ genreName, genreImg, title }) => {
   const location = useLocation();
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   let category = genreName.map((value) => value);
   let categoryImg = genreImg;
@@ -25,6 +28,16 @@ const Categories = ({ genreName, genreImg, title }) => {
         container.current.querySelector(".snap-start").offsetWidth;
       container.current.scrollLeft += scrollAmount;
     }
+  };
+
+  const handlePosterClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
   };
 
   return (
@@ -65,12 +78,22 @@ const Categories = ({ genreName, genreImg, title }) => {
             const start = index * 4;
             let cards = categoryImg.slice(start, start + 4);
             let card = cards.map((value, i) => (
-              <img
+              <div
                 key={i}
-                src={`https://image.tmdb.org/t/p/w342${value}`}
-                alt={`image${i}`}
-                className="rounded-md"
-              />
+                className="relative group cursor-pointer"
+                onClick={() => handlePosterClick({ id: value, media_type: 'movie' })}
+              >
+                <img
+                  src={`https://image.tmdb.org/t/p/w342${value}`}
+                  alt={`image${i}`}
+                  className="rounded-md w-full h-auto transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <span className="text-white text-lg font-semibold">
+                    {value}
+                  </span>
+                </div>
+              </div>
             ));
             return (
               <div
@@ -105,6 +128,12 @@ const Categories = ({ genreName, genreImg, title }) => {
           </div>
         </div>
       </div>
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        movieId={selectedMovie?.id}
+        type={selectedMovie?.media_type}
+      />
     </div>
   );
 };

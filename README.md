@@ -30,7 +30,6 @@ StreamVibe is a modern video streaming web application built with React (Vite) f
 
 Ensure you have the following installed:
 
-- Node.js & npm
 - Python & pip
 
 ### Clone the Repository

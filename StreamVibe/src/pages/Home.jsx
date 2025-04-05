@@ -6,6 +6,7 @@ import Trial from "../../components/Trial";
 import Footer from "../../components/Footer";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import MovieDetailsModal from "../../components/MovieDetailsModal";
 
 const Home = ({ seriesData, moviesData, movieGenreName, movieGenreData }) => {
   let seriesPoster = seriesData.map((value) => value.poster_path);
@@ -15,10 +16,22 @@ const Home = ({ seriesData, moviesData, movieGenreName, movieGenreData }) => {
   const genreName = movieGenreName.map((value) => value);
 
   const [merged, setMerged] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setMerged([...moviesPoster, ...seriesPoster]);
   }, [seriesData, moviesData]);
+
+  const handlePosterClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
 
   return (
     <div className="relative">
@@ -56,6 +69,13 @@ const Home = ({ seriesData, moviesData, movieGenreName, movieGenreData }) => {
         <Trial />
       </div>
       <Footer />
+      
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        movieId={selectedMovie?.id}
+        type={selectedMovie?.media_type}
+      />
     </div>
   );
 };
