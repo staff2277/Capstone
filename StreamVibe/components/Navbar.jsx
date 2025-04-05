@@ -2,14 +2,14 @@ import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { useState } from "react";
 import Search from "./Search";
-import AuthModal from './AuthModal';
+import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem('token')
+    !!localStorage.getItem("token")
   );
 
   const handleSearchClick = (e) => {
@@ -24,7 +24,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setIsAuthenticated(false);
   };
 
@@ -106,19 +106,19 @@ const Navbar = () => {
             />
           </span>
           {isAuthenticated ? (
-            <div className="relative group">
-              <button className="flex items-center space-x-2 hover:text-gray-300">
+            <div className="relative group py-5">
+              <button className="flex items-center rounded-lg space-x-2 hover:text-gray-300">
                 <img
-                  src="/default-avatar.png"
+                  src="/static/images/profile.svg"
                   alt="Profile"
                   className="w-8 h-8 rounded-full"
                 />
               </button>
-              <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg hidden group-hover:block">
-                <div className="py-1">
+              <div className="absolute right-[0] top-[-5] mt-2 w-48 bg-gray-800 rounded-lg shadow-lg hidden group-hover:block">
+                <div className="">
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700"
+                    className="block w-full rounded-lg text-left px-6 py-4 text-sm text-white hover:bg-gray-600"
                   >
                     Logout
                   </button>
