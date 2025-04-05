@@ -9,6 +9,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     password: '',
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -20,30 +21,54 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      const endpoint = isLogin ? '/api/auth/login/' : '/api/auth/register/';
-      const response = await fetch(endpoint, {
+      const response = await fetch(`http://127.0.0.1:8000/api/auth/${isLogin ? 'login' : 'register'}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
         },
-        body: JSON.stringify(formData),
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          ...(isLogin ? {} : { username: formData.username }),
+        }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Authentication failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Authentication failed');
       }
 
-      // Store the token
+      const data = await response.json();
       localStorage.setItem('token', data.token);
       onAuthSuccess();
       onClose();
     } catch (err) {
-      setError(err.message);
+      console.error('Auth error:', err);
+      setError(err.message || 'Failed to connect to server. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Helper function to get CSRF token from cookies
+  const getCookie = (name) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
   };
 
   if (!isOpen) return null;
