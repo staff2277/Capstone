@@ -79,7 +79,7 @@ const Categories = ({ genreName, genreImg, title, movieGenreData }) => {
             const genreMovies = movieGenreData?.[index] || [];
             // Take only the first 4 movies for this genre
             const moviesToShow = genreMovies.slice(0, 4);
-            
+
             return (
               <div
                 key={index}
@@ -97,9 +97,9 @@ const Categories = ({ genreName, genreImg, title, movieGenreData }) => {
                         alt={movie.title || movie.name}
                         className="rounded-md w-full h-auto transition-transform duration-300 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="absolute top-[-5px] inset-[-3px] bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <span className="text-white text-lg font-semibold">
-                          {movie.title || movie.name || 'Movie'}
+                          {movie.title || movie.name || "Movie"}
                         </span>
                       </div>
                     </div>
