@@ -4,7 +4,7 @@ import clsx from "clsx";
 import PropTypes from "prop-types";
 import MovieDetailsModal from "./MovieDetailsModal";
 
-const Categories = ({ genreName, genreImg, title }) => {
+const Categories = ({ genreName, genreImg, title, movieGenreData }) => {
   const location = useLocation();
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,37 +74,39 @@ const Categories = ({ genreName, genreImg, title }) => {
           ref={container}
           className="relative  flex  overflow-x-hidden snap-mandatory snap-x snap-item"
         >
-          {category.map((value, index) => {
-            const start = index * 4;
-            let cards = categoryImg.slice(start, start + 4);
-            let card = cards.map((value, i) => (
-              <div
-                key={i}
-                className="relative group cursor-pointer"
-                onClick={() => handlePosterClick({ id: value, media_type: 'movie' })}
-              >
-                <img
-                  src={`https://image.tmdb.org/t/p/w342${value}`}
-                  alt={`image${i}`}
-                  className="rounded-md w-full h-auto transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <span className="text-white text-lg font-semibold">
-                    {value}
-                  </span>
-                </div>
-              </div>
-            ));
+          {category.map((genre, index) => {
+            // Get the movies for this specific genre
+            const genreMovies = movieGenreData?.[index] || [];
+            // Take only the first 4 movies for this genre
+            const moviesToShow = genreMovies.slice(0, 4);
+            
             return (
               <div
                 key={index}
                 className="my-[4rem] mr-[1.5rem] p-[20px] bg-[#1A1A1A] rounded-lg snap-start"
               >
-                <div className="grid grid-cols-[130px_130px] gap-2  grid-rows-2">
-                  {card}
+                <div className="grid grid-cols-[130px_130px] gap-2 grid-rows-2">
+                  {moviesToShow.map((movie, i) => (
+                    <div
+                      key={i}
+                      className="relative group cursor-pointer"
+                      onClick={() => handlePosterClick(movie)}
+                    >
+                      <img
+                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+                        alt={movie.title || movie.name}
+                        className="rounded-md w-full h-auto transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <span className="text-white text-lg font-semibold">
+                          {movie.title || movie.name || 'Movie'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="flex mt-2">
-                  <span className="mr-auto">{value}</span>
+                  <span className="mr-auto">{genre}</span>
                   <span>
                     <img src="/images/right.svg" alt="" />
                   </span>
@@ -141,6 +143,18 @@ const Categories = ({ genreName, genreImg, title }) => {
 Categories.propTypes = {
   genreName: PropTypes.arrayOf(PropTypes.string).isRequired,
   genreImg: PropTypes.arrayOf(PropTypes.string).isRequired,
+  title: PropTypes.string.isRequired,
+  movieGenreData: PropTypes.arrayOf(
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        title: PropTypes.string,
+        name: PropTypes.string,
+        poster_path: PropTypes.string,
+        media_type: PropTypes.string,
+      })
+    )
+  ),
 };
 
 export default Categories;

@@ -82,7 +82,7 @@ const MoviesXShows = ({
           <div>
             <Categories
               genreName={genreName}
-              movieGenreData={movieGenreData}
+              movieGenreData={toggleSeries ? seriesGenreData : movieGenreData}
               title="Our Genres"
               genreImg={genreImg}
             />
@@ -90,6 +90,7 @@ const MoviesXShows = ({
           <div>
             <Categories
               genreName={genreName}
+              movieGenreData={toggleSeries ? seriesTopTen : movieTopTen}
               genreImg={topTen}
               title="Top 10 In Genres"
             />

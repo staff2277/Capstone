@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { searchMovies } from '../services/tmdb';
+import MovieDetailsModal from './MovieDetailsModal';
 
 const Search = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     console.log("Search component mounted or isOpen changed:", isOpen);
@@ -42,6 +45,16 @@ const Search = ({ isOpen, onClose }) => {
       clearTimeout(debounceTimer);
     };
   }, [searchQuery]);
+
+  const handleMovieClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedMovie(null);
+  };
 
   if (!isOpen) {
     console.log("Search modal not open, returning null");
@@ -101,6 +114,7 @@ const Search = ({ isOpen, onClose }) => {
                 <div
                   key={movie.id}
                   className="p-4 hover:bg-[#0F0F0F] rounded-lg cursor-pointer transition-colors"
+                  onClick={() => handleMovieClick(movie)}
                 >
                   <div className="flex gap-4">
                     {movie.poster_path && (
@@ -132,6 +146,12 @@ const Search = ({ isOpen, onClose }) => {
           )}
         </motion.div>
       </motion.div>
+      <MovieDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        movieId={selectedMovie?.id}
+        type={selectedMovie?.media_type || 'movie'}
+      />
     </AnimatePresence>
   );
 };

@@ -75,7 +75,7 @@ const Navbar = () => {
         <div className="max-lg:hidden flex items-center gap-3">
           <button
             onClick={handleSearchClick}
-            className="p-2 hover:bg-[#e43838] z-50 border-5 rounded-lg transition-colors"
+            className="p-2 hover:bg-[#e43838] rounded-lg transition-colors"
             aria-label="Search"
           >
             <img
@@ -88,12 +88,24 @@ const Navbar = () => {
             <img
               src="/static/images/notification.svg"
               alt="notification icon"
+              className="p-2 hover:bg-[#e43838] rounded-lg transition-colors"
             />
           </span>
+          <button>
+            <img
+              src="/static/images/profile.svg"
+              alt="profile icon"
+              className="p-2 w-[70%] hover:bg-[#e43838] rounded-lg transition-colors"
+            />
+          </button>
         </div>
         <div className="lg:hidden  max-sm:px-[10px] max-sm:py-[20px] max-lg:px-[20px] max-lg:py-[25px] rounded-xl">
           <span className="">
-            <img src="/static/images/menu.svg" alt="" />
+            <img
+              src="/static/images/menu.svg"
+              alt="menu icon"
+              className="p-2 hover:bg-[#e43838] rounded-lg transition-colors"
+            />
           </span>
         </div>
       </div>

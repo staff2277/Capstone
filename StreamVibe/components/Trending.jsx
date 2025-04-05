@@ -1,8 +1,11 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import PropTypes from "prop-types";
+import MovieDetailsModal from "./MovieDetailsModal";
 
 const Trending = ({ trending }) => {
   const container = useRef(null);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onClickLeft = () => {
     if (container.current) {
@@ -20,6 +23,16 @@ const Trending = ({ trending }) => {
     }
   };
 
+  const handlePosterClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
   return (
     <div>
       <h1 className="5s:text-[2rem] sm:text-[2.5rem] max-5s:text-[1rem] font-bold ml-5">
@@ -32,7 +45,8 @@ const Trending = ({ trending }) => {
         {trending.map((value, index) => (
           <div
             key={index}
-            className="snap-start p-[20px] bg-[#1A1A1A] rounded-xl"
+            className="snap-start p-[20px] bg-[#1A1A1A] rounded-xl cursor-pointer"
+            onClick={() => handlePosterClick(value)}
           >
             <div className="w-[280px]">
               <img
@@ -72,6 +86,12 @@ const Trending = ({ trending }) => {
           <img src="/static/images/right.svg" className="" alt="right icon" />
         </div>
       </div>
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        movieId={selectedMovie?.id}
+        type={selectedMovie?.media_type || 'movie'}
+      />
     </div>
   );
 };
@@ -79,10 +99,13 @@ const Trending = ({ trending }) => {
 Trending.propTypes = {
   trending: PropTypes.arrayOf(
     PropTypes.shape({
+      id: PropTypes.number.isRequired,
       poster_path: PropTypes.string,
       title: PropTypes.string,
       release_date: PropTypes.string,
+      first_air_date: PropTypes.string,
       vote_average: PropTypes.number,
+      media_type: PropTypes.string,
     })
   ).isRequired,
 };

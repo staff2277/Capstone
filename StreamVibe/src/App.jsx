@@ -5,6 +5,7 @@ import Support from "./pages/Support";
 import Subscriptions from "./pages/Subscriptions";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
+import MovieDetails from './pages/MovieDetails';
 
 const App = () => {
   let [moviesData, setMoviesData] = useState([]);
@@ -173,6 +174,7 @@ const App = () => {
         />
         <Route path="/support" element={<Support moviesData={moviesData} />} />
         <Route path="/subscriptions" element={<Subscriptions />} />
+        <Route path="/movie/:id" element={<MovieDetails />} />
       </Routes>
     </div>
   );

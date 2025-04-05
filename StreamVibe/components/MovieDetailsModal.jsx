@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMovieDetails } from '../services/tmdb';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
   const [movieDetails, setMovieDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -26,6 +28,11 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
 
     fetchMovieDetails();
   }, [movieId]);
+
+  const handleViewMore = () => {
+    navigate(`/movie/${movieId}`);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -111,6 +118,12 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
                         </div>
                       </div>
                     </div>
+                    <button
+                      onClick={handleViewMore}
+                      className="mt-6 bg-[#E50000] hover:bg-[#cc0000] text-white px-6 py-2 rounded-lg transition-colors"
+                    >
+                      View More Details
+                    </button>
                   </div>
                 </div>
               </div>

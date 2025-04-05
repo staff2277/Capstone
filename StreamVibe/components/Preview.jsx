@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import MovieDetailsModal from "./MovieDetailsModal";
 
 const Preview = ({ moviesData }) => {
   const [count, setCount] = useState(0);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   let moviesbg = moviesData.map((value) => value.backdrop_path);
   let moviesTitle = moviesData.map((value) => value.title);
@@ -16,14 +19,25 @@ const Preview = ({ moviesData }) => {
     return () => clearInterval(interval);
   }, [moviesbg.length]);
 
+  const handlePosterClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
   return (
     <div>
       <div className="h-[100vh] bg-cover bg-center">
         <div
-          className="relative sm:px-[50px] max-sm:px-[20px] bg-cover bg-center h-[100vh]"
+          className="relative sm:px-[50px] max-sm:px-[20px] bg-cover bg-center h-[100vh] cursor-pointer"
           style={{
             backgroundImage: `url(https://image.tmdb.org/t/p/original${moviesbg[count]})`,
           }}
+          onClick={() => handlePosterClick(moviesData[count])}
         >
           <div className="absolute h-[100vh] w-full bg-category-gradient inset-0 z-10"></div>
           <div className="flex flex-col justify-end items-center h-[100vh] z-20">
@@ -48,15 +62,16 @@ const Preview = ({ moviesData }) => {
             </div>
             <div className="flex justify-between w-full text-[3rem] gap-2 z-20">
               <div
-                onClick={() =>
+                onClick={(e) => {
+                  e.stopPropagation();
                   setCount((prevstate) => {
                     if (count <= 0) {
                       return moviesbg.length - 1;
                     } else {
                       return prevstate - 1;
                     }
-                  })
-                }
+                  });
+                }}
                 className=" sm:p-5 max-sm:p-3 bg-[#3a3a3a] hover:bg-[#1A1A1A] rounded-lg mr-2 cursor-pointer"
               >
                 <img
@@ -66,15 +81,16 @@ const Preview = ({ moviesData }) => {
                 />
               </div>
               <div
-                onClick={() =>
+                onClick={(e) => {
+                  e.stopPropagation();
                   setCount((prevstate) => {
                     if (count >= moviesbg.length - 1) {
                       return 0;
                     } else {
                       return prevstate + 1;
                     }
-                  })
-                }
+                  });
+                }}
                 className="sm:p-5  max-sm:p-3 bg-[#3a3a3a] hover:bg-[#1A1A1A] rounded-lg mr-2 cursor-pointer"
               >
                 <img
@@ -87,6 +103,12 @@ const Preview = ({ moviesData }) => {
           </div>
         </div>
       </div>
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        movieId={selectedMovie?.id}
+        type={selectedMovie?.media_type || 'movie'}
+      />
     </div>
   );
 };
@@ -94,9 +116,11 @@ const Preview = ({ moviesData }) => {
 Preview.propTypes = {
   moviesData: PropTypes.arrayOf(
     PropTypes.shape({
+      id: PropTypes.number.isRequired,
       backdrop_path: PropTypes.string,
       title: PropTypes.string,
       overview: PropTypes.string,
+      media_type: PropTypes.string,
     })
   ).isRequired,
 };
