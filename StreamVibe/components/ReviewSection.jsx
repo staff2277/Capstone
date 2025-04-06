@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
-// Function to get CSRF token from cookie
-const getCookie = (name) => {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-};
-
 const ReviewSection = ({ movieId, movieType }) => {
   const { isAuthenticated, user } = useAuth();
   const [reviews, setReviews] = useState([]);
@@ -24,6 +8,22 @@ const ReviewSection = ({ movieId, movieType }) => {
   const [comment, setComment] = useState('');
   const [editingReview, setEditingReview] = useState(null);
   const [error, setError] = useState('');
+
+  // Function to get CSRF token from cookies
+  const getCookie = (name) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  };
 
   useEffect(() => {
     fetchReviews();
@@ -75,18 +75,13 @@ const ReviewSection = ({ movieId, movieType }) => {
       return;
     }
 
-    const csrfToken = getCookie('csrftoken');
-    if (!csrfToken) {
-      setError('CSRF token not found. Please refresh the page and try again.');
-      return;
-    }
-
     try {
       const url = editingReview
         ? `http://127.0.0.1:8000/api/reviews/reviews/${editingReview.id}/`
         : 'http://127.0.0.1:8000/api/reviews/reviews/';
       
       const method = editingReview ? 'PUT' : 'POST';
+      const csrfToken = getCookie('csrftoken');
       
       console.log('Submitting review:', { movieId, movieType, rating, comment });
       
@@ -130,13 +125,8 @@ const ReviewSection = ({ movieId, movieType }) => {
       return;
     }
 
-    const csrfToken = getCookie('csrftoken');
-    if (!csrfToken) {
-      setError('CSRF token not found. Please refresh the page and try again.');
-      return;
-    }
-
     try {
+      const csrfToken = getCookie('csrftoken');
       const response = await fetch(
         `http://127.0.0.1:8000/api/reviews/reviews/${reviewId}/`,
         {

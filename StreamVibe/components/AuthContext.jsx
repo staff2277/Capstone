@@ -10,24 +10,88 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // You might want to verify the token with your backend here
-      setIsAuthenticated(true);
-      // Set a default user object - you might want to fetch the actual user data
-      setUser({ username: 'User' });
+      // Verify token with backend
+      fetch('http://localhost:8000/api/auth/verify/', {
+        headers: {
+          'Authorization': `Token ${token}`
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          setIsAuthenticated(true);
+          // Fetch user data
+          return fetch('http://localhost:8000/api/auth/user/', {
+            headers: {
+              'Authorization': `Token ${token}`
+            }
+          });
+        }
+        throw new Error('Invalid token');
+      })
+      .then(response => response.json())
+      .then(userData => {
+        setUser(userData);
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+        localStorage.removeItem('token');
+        setIsAuthenticated(false);
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    localStorage.setItem('token', userData.token);
-    setIsAuthenticated(true);
-    setUser(userData.user);
+  const login = async (email, password) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setIsAuthenticated(true);
+      setUser(data.user);
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    setUser(null);
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch('http://localhost:8000/api/auth/logout/', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+          credentials: 'include',
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      setIsAuthenticated(false);
+      setUser(null);
+    }
   };
 
   return (

@@ -3,14 +3,13 @@ import clsx from "clsx";
 import { useState } from "react";
 import Search from "./Search";
 import AuthModal from "./AuthModal";
+import { useAuth } from './AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
-  );
+  const { isAuthenticated, logout } = useAuth();
 
   const handleSearchClick = (e) => {
     e.preventDefault();
@@ -20,12 +19,15 @@ const Navbar = () => {
   };
 
   const handleAuthSuccess = () => {
-    setIsAuthenticated(true);
+    // This function is no longer used in the new implementation
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
@@ -126,12 +128,12 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            <Link
+              to="/login"
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Sign In
-            </button>
+              Login
+            </Link>
           )}
         </div>
         <div className="lg:hidden  max-sm:px-[10px] max-sm:py-[20px] max-lg:px-[20px] max-lg:py-[25px] rounded-xl">

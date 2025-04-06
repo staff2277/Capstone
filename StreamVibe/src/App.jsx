@@ -7,6 +7,8 @@ import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import MovieDetails from "./pages/MovieDetails";
 import { AuthProvider } from '../components/AuthContext';
+import ProtectedRoute from '../components/ProtectedRoute';
+import Login from './pages/Login';
 
 const App = () => {
   let [moviesData, setMoviesData] = useState([]);
@@ -21,7 +23,6 @@ const App = () => {
   let [seriesGenreName, setSeriesGenreName] = useState([]);
   let [seriesGenreId, setSeriesGenreId] = useState([]);
 
-  /* const url = "https://api.themoviedb.org/3/trending/all/day?language=en-US"; */
   const options = {
     method: "GET",
     headers: {
@@ -113,10 +114,6 @@ const App = () => {
     fetchMultiple();
   }, [movieGenreId.length]);
 
-  /*  useEffect(() => {
-    console.log(movieGenreData);
-  }, [movieGenreId.length]); */
-
   useEffect(() => {
     fetch(
       "https://api.themoviedb.org/3/trending/movie/week?language=en-US",
@@ -176,7 +173,15 @@ const App = () => {
           />
           <Route path="/support" element={<Support moviesData={moviesData} />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
-          <Route path="/movie/:id/:type" element={<MovieDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/movie/:id/:type"
+            element={
+              <ProtectedRoute>
+                <MovieDetails />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </AuthProvider>

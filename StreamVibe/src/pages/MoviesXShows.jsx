@@ -1,11 +1,11 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 import Categories from "../../components/Categories";
 import Preview from "../../components/Preview";
 import Trending from "../../components/Trending";
 import Trial from "../../components/Trial";
 import Footer from "../../components/Footer";
+import MovieDetailsModal from "../../components/MovieDetailsModal";
 import clsx from "clsx";
 
 const MoviesXShows = ({
@@ -18,13 +18,19 @@ const MoviesXShows = ({
   seriesGenreData,
   seriesTopTen,
 }) => {
-  const navigate = useNavigate();
   const [toggleMovies, setToggleMovies] = useState(true);
   const [toggleSeries, setToggleSeries] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleMovieClick = (id) => {
-    const type = toggleSeries ? 'tv' : 'movie';
-    navigate(`/movie/${id}/${type}`);
+    setSelectedMovie(id);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
   };
 
   const trending = toggleSeries ? seriesData : moviesData;
@@ -113,6 +119,13 @@ const MoviesXShows = ({
         <Trial />
         <Footer />
       </div>
+
+      <MovieDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        movieId={selectedMovie}
+        type={toggleSeries ? 'tv' : 'movie'}
+      />
     </div>
   );
 };

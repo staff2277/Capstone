@@ -18,7 +18,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
     setError(null);
     try {
       const fetchMovieDetails = async () => {
-        const details = await getMovieDetails(movieId);
+        const details = await getMovieDetails(movieId, type);
         setMovieDetails(details);
       };
       fetchMovieDetails();
@@ -28,12 +28,12 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
     } finally {
       setLoading(false);
     }
-  }, [movieId]);
+  }, [movieId, type]);
 
   const handleViewMore = () => {
     const isAuthenticated = !!localStorage.getItem('token');
     if (isAuthenticated) {
-      navigate(`/movie/${movieId}`);
+      navigate(`/movie/${movieId}/${type}`);
       onClose();
     } else {
       setIsAuthModalOpen(true);
@@ -42,8 +42,15 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
 
   const handleAuthSuccess = () => {
     setIsAuthModalOpen(false);
-    navigate(`/movie/${movieId}`);
+    navigate(`/movie/${movieId}/${type}`);
     onClose();
+  };
+
+  const formatRuntime = (runtime) => {
+    if (!runtime) return 'N/A';
+    const hours = Math.floor(runtime / 60);
+    const minutes = runtime % 60;
+    return `${hours}h ${minutes}m`;
   };
 
   return (
@@ -76,7 +83,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
                   <div className="relative h-96">
                     <img
                       src={`https://image.tmdb.org/t/p/original${movieDetails.backdrop_path}`}
-                      alt={movieDetails.title}
+                      alt={movieDetails.title || movieDetails.name}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] to-transparent"></div>
@@ -87,17 +94,25 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
                     <div className="flex gap-6">
                       <img
                         src={`https://image.tmdb.org/t/p/w342${movieDetails.poster_path}`}
-                        alt={movieDetails.title}
+                        alt={movieDetails.title || movieDetails.name}
                         className="w-48 h-72 object-cover rounded-lg"
                       />
                       <div className="flex-1">
-                        <h2 className="text-3xl font-bold mb-2">{movieDetails.title}</h2>
+                        <h2 className="text-3xl font-bold mb-2">
+                          {movieDetails.title || movieDetails.name}
+                        </h2>
                         <div className="flex items-center gap-4 mb-4">
                           <span className="text-yellow-400">
                             {movieDetails.vote_average.toFixed(1)}/10
                           </span>
-                          <span>{new Date(movieDetails.release_date).getFullYear()}</span>
-                          <span>{movieDetails.runtime} min</span>
+                          <span>
+                            {new Date(movieDetails.release_date || movieDetails.first_air_date).getFullYear()}
+                          </span>
+                          {type === 'movie' ? (
+                            <span>{formatRuntime(movieDetails.runtime)}</span>
+                          ) : (
+                            <span>{movieDetails.number_of_seasons} seasons</span>
+                          )}
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4">
                           {movieDetails.genres.map(genre => (
@@ -110,26 +125,39 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
                           ))}
                         </div>
                         <p className="text-gray-300 mb-4">{movieDetails.overview}</p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="font-semibold mb-2">Director</h3>
-                            <p>
-                              {movieDetails.credits.crew
-                                .find(person => person.job === 'Director')
-                                ?.name || 'N/A'}
-                            </p>
+                        {type === 'movie' ? (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <h3 className="font-semibold mb-2">Director</h3>
+                              <p>
+                                {movieDetails.credits.crew
+                                  .find(person => person.job === 'Director')
+                                  ?.name || 'N/A'}
+                              </p>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold mb-2">Cast</h3>
+                              <div className="flex flex-wrap gap-2">
+                                {movieDetails.credits.cast.slice(0, 3).map(actor => (
+                                  <span key={actor.id} className="text-sm">
+                                    {actor.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
                           </div>
+                        ) : (
                           <div>
-                            <h3 className="font-semibold mb-2">Cast</h3>
+                            <h3 className="font-semibold mb-2">Created By</h3>
                             <div className="flex flex-wrap gap-2">
-                              {movieDetails.credits.cast.slice(0, 3).map(actor => (
-                                <span key={actor.id} className="text-sm">
-                                  {actor.name}
+                              {movieDetails.created_by.map(creator => (
+                                <span key={creator.id} className="text-sm">
+                                  {creator.name}
                                 </span>
                               ))}
                             </div>
                           </div>
-                        </div>
+                        )}
                         <button
                           onClick={handleViewMore}
                           className="mt-6 bg-[#E50000] hover:bg-[#cc0000] text-white px-6 py-2 rounded-lg transition-colors"
