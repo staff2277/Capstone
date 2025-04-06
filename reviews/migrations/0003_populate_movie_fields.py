@@ -7,7 +7,10 @@ def populate_movie_fields(apps, schema_editor):
     Review.objects.filter(movie_type__isnull=True).update(movie_type='movie')
 
 def reverse_populate_movie_fields(apps, schema_editor):
-    pass  # No need to reverse this migration
+    Review = apps.get_model('reviews', 'Review')
+    # Set fields back to null
+    Review.objects.filter(movie_id=1).update(movie_id=None)
+    Review.objects.filter(movie_type='movie').update(movie_type=None)
 
 class Migration(migrations.Migration):
     dependencies = [

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import MovieDetailsModal from "./MovieDetailsModal";
 
-const Preview = ({ moviesData }) => {
+const Preview = ({ moviesData, onMovieClick }) => {
+  const navigate = useNavigate();
   const [count, setCount] = useState(0);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,8 +22,12 @@ const Preview = ({ moviesData }) => {
   }, [moviesbg.length]);
 
   const handlePosterClick = (movie) => {
-    setSelectedMovie(movie);
-    setIsModalOpen(true);
+    if (onMovieClick) {
+      onMovieClick(movie.id);
+    } else {
+      setSelectedMovie(movie);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -123,6 +129,7 @@ Preview.propTypes = {
       media_type: PropTypes.string,
     })
   ).isRequired,
+  onMovieClick: PropTypes.func,
 };
 
 export default Preview;

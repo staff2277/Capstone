@@ -4,7 +4,7 @@ import clsx from "clsx";
 import PropTypes from "prop-types";
 import MovieDetailsModal from "./MovieDetailsModal";
 
-const Categories = ({ genreName, genreImg, title, movieGenreData }) => {
+const Categories = ({ genreName, genreImg, title, movieGenreData, onMovieClick }) => {
   const location = useLocation();
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,8 +31,12 @@ const Categories = ({ genreName, genreImg, title, movieGenreData }) => {
   };
 
   const handlePosterClick = (movie) => {
-    setSelectedMovie(movie);
-    setIsModalOpen(true);
+    if (onMovieClick) {
+      onMovieClick(movie.id);
+    } else {
+      setSelectedMovie(movie);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -155,6 +159,7 @@ Categories.propTypes = {
       })
     )
   ),
+  onMovieClick: PropTypes.func,
 };
 
 export default Categories;

@@ -5,7 +5,8 @@ import Support from "./pages/Support";
 import Subscriptions from "./pages/Subscriptions";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
-import MovieDetails from './pages/MovieDetails';
+import MovieDetails from "./pages/MovieDetails";
+import { AuthProvider } from '../components/AuthContext';
 
 const App = () => {
   let [moviesData, setMoviesData] = useState([]);
@@ -143,40 +144,42 @@ const App = () => {
   }, []);
 
   return (
-    <div className="text-white">
-      <Navbar />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Home
-              movieGenreName={movieGenreName}
-              seriesData={seriesData}
-              moviesData={moviesData}
-              movieGenreData={movieGenreData}
-            />
-          }
-        />
-        <Route
-          path="/moviesXshows"
-          element={
-            <MoviesXShows
-              moviesData={moviesData}
-              movieGenreName={movieGenreName}
-              movieGenreData={movieGenreData}
-              movieTopTen={movieTopTen}
-              seriesData={seriesData}
-              seriesGenreName={seriesGenreName}
-              seriesGenreData={seriesGenreData}
-              seriesTopTen={seriesTopTen}
-            />
-          }
-        />
-        <Route path="/support" element={<Support moviesData={moviesData} />} />
-        <Route path="/subscriptions" element={<Subscriptions />} />
-        <Route path="/movie/:id" element={<MovieDetails />} />
-      </Routes>
-    </div>
+    <AuthProvider>
+      <div className="text-white">
+        <Navbar />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                movieGenreName={movieGenreName}
+                seriesData={seriesData}
+                moviesData={moviesData}
+                movieGenreData={movieGenreData}
+              />
+            }
+          />
+          <Route
+            path="/moviesXshows"
+            element={
+              <MoviesXShows
+                moviesData={moviesData}
+                movieGenreName={movieGenreName}
+                movieGenreData={movieGenreData}
+                movieTopTen={movieTopTen}
+                seriesData={seriesData}
+                seriesGenreName={seriesGenreName}
+                seriesGenreData={seriesGenreData}
+                seriesTopTen={seriesTopTen}
+              />
+            }
+          />
+          <Route path="/support" element={<Support moviesData={moviesData} />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/movie/:id/:type" element={<MovieDetails />} />
+        </Routes>
+      </div>
+    </AuthProvider>
   );
 };
 

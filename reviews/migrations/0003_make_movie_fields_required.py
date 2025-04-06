@@ -2,7 +2,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('reviews', '0002_populate_movie_fields'),
+        ('reviews', '0002_add_movie_fields'),
     ]
 
     operations = [

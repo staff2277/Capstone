@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import Categories from "../../components/Categories";
 import Preview from "../../components/Preview";
 import Trending from "../../components/Trending";
@@ -17,8 +18,14 @@ const MoviesXShows = ({
   seriesGenreData,
   seriesTopTen,
 }) => {
+  const navigate = useNavigate();
   const [toggleMovies, setToggleMovies] = useState(true);
   const [toggleSeries, setToggleSeries] = useState(false);
+
+  const handleMovieClick = (id) => {
+    const type = toggleSeries ? 'tv' : 'movie';
+    navigate(`/movie/${id}/${type}`);
+  };
 
   const trending = toggleSeries ? seriesData : moviesData;
 
@@ -37,7 +44,7 @@ const MoviesXShows = ({
   return (
     <div className="">
       <div>
-        <Preview moviesData={moviesData} />
+        <Preview moviesData={moviesData} onMovieClick={handleMovieClick} />
       </div>
       <div className="mt-[5rem]  sm:px-[5%] max-sm:px-[15px]">
         <div className="border-2 border-[#1F1F1F] relative">
@@ -85,6 +92,7 @@ const MoviesXShows = ({
               movieGenreData={toggleSeries ? seriesGenreData : movieGenreData}
               title="Our Genres"
               genreImg={genreImg}
+              onMovieClick={handleMovieClick}
             />
           </div>
           <div>
@@ -93,10 +101,11 @@ const MoviesXShows = ({
               movieGenreData={toggleSeries ? seriesTopTen : movieTopTen}
               genreImg={topTen}
               title="Top 10 In Genres"
+              onMovieClick={handleMovieClick}
             />
           </div>
           <div>
-            <Trending trending={trending} />
+            <Trending trending={trending} onMovieClick={handleMovieClick} />
           </div>
         </div>
       </div>

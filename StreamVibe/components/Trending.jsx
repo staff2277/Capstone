@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import PropTypes from "prop-types";
 import MovieDetailsModal from "./MovieDetailsModal";
 
-const Trending = ({ trending }) => {
+const Trending = ({ trending, onMovieClick }) => {
   const container = useRef(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,8 +24,12 @@ const Trending = ({ trending }) => {
   };
 
   const handlePosterClick = (movie) => {
-    setSelectedMovie(movie);
-    setIsModalOpen(true);
+    if (onMovieClick) {
+      onMovieClick(movie.id);
+    } else {
+      setSelectedMovie(movie);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -108,6 +112,7 @@ Trending.propTypes = {
       media_type: PropTypes.string,
     })
   ).isRequired,
+  onMovieClick: PropTypes.func,
 };
 
 export default Trending;

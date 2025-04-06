@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './AuthContext';
+
+// Function to get CSRF token from cookie
+const getCookie = (name) => {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+};
 
 const ReviewSection = ({ movieId, movieType }) => {
   const { isAuthenticated, user } = useAuth();
@@ -16,13 +32,20 @@ const ReviewSection = ({ movieId, movieType }) => {
   const fetchReviews = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`
+        `http://127.0.0.1:8000/api/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`,
+        {
+          credentials: 'include', // Include cookies in the request
+        }
       );
       if (response.ok) {
         const data = await response.json();
         setReviews(data);
+      } else {
+        console.error('Failed to fetch reviews:', response.status, response.statusText);
+        setError('Failed to fetch reviews');
       }
     } catch (err) {
+      console.error('Error fetching reviews:', err);
       setError('Failed to fetch reviews');
     }
   };
@@ -31,6 +54,33 @@ const ReviewSection = ({ movieId, movieType }) => {
     e.preventDefault();
     setError('');
 
+    if (!isAuthenticated) {
+      setError('You must be logged in to submit a review');
+      return;
+    }
+
+    if (!rating) {
+      setError('Please select a rating');
+      return;
+    }
+
+    if (!comment.trim()) {
+      setError('Please enter a comment');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Authentication token not found. Please log in again.');
+      return;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+    if (!csrfToken) {
+      setError('CSRF token not found. Please refresh the page and try again.');
+      return;
+    }
+
     try {
       const url = editingReview
         ? `http://127.0.0.1:8000/api/reviews/reviews/${editingReview.id}/`
@@ -38,12 +88,16 @@ const ReviewSection = ({ movieId, movieType }) => {
       
       const method = editingReview ? 'PUT' : 'POST';
       
+      console.log('Submitting review:', { movieId, movieType, rating, comment });
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Token ${localStorage.getItem('token')}`,
+          'Authorization': `Token ${token}`,
+          'X-CSRFToken': csrfToken,
         },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({
           movie_id: movieId,
           movie_type: movieType,
@@ -52,37 +106,58 @@ const ReviewSection = ({ movieId, movieType }) => {
         }),
       });
 
+      const responseData = await response.json();
+      
       if (response.ok) {
         setRating(0);
         setComment('');
         setEditingReview(null);
         fetchReviews();
       } else {
-        setError('Failed to submit review');
+        console.error('Failed to submit review:', response.status, responseData);
+        setError(responseData.detail || 'Failed to submit review');
       }
     } catch (err) {
-      setError('Failed to submit review');
+      console.error('Error submitting review:', err);
+      setError('Failed to submit review. Please try again later.');
     }
   };
 
   const handleDelete = async (reviewId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Authentication token not found. Please log in again.');
+      return;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+    if (!csrfToken) {
+      setError('CSRF token not found. Please refresh the page and try again.');
+      return;
+    }
+
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/reviews/reviews/${reviewId}/`,
         {
           method: 'DELETE',
           headers: {
-            'Authorization': `Token ${localStorage.getItem('token')}`,
+            'Authorization': `Token ${token}`,
+            'X-CSRFToken': csrfToken,
           },
+          credentials: 'include', // Include cookies in the request
         }
       );
 
       if (response.ok) {
         fetchReviews();
       } else {
-        setError('Failed to delete review');
+        const responseData = await response.json();
+        console.error('Failed to delete review:', response.status, responseData);
+        setError(responseData.detail || 'Failed to delete review');
       }
     } catch (err) {
+      console.error('Error deleting review:', err);
       setError('Failed to delete review');
     }
   };
@@ -97,7 +172,7 @@ const ReviewSection = ({ movieId, movieType }) => {
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Reviews</h2>
       
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">Rating</label>
@@ -133,9 +208,17 @@ const ReviewSection = ({ movieId, movieType }) => {
             {editingReview ? 'Update Review' : 'Submit Review'}
           </button>
         </form>
+      ) : (
+        <div className="mb-8 text-gray-400">
+          Please log in to submit a review
+        </div>
       )}
 
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && (
+        <div className="text-red-500 mb-4 p-2 bg-red-100 rounded">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-4">
         {reviews.map((review) => (

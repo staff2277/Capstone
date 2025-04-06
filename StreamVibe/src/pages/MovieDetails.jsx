@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getMovieDetails, getSimilarMovies } from '../services/tmdb';
-import ReviewSection from '../components/ReviewSection';
+import { getMovieDetails, getSimilarMovies } from '../../services/tmdb';
+import ReviewSection from '../../components/ReviewSection';
 
 const MovieDetails = () => {
   const { id, type } = useParams();
@@ -14,24 +14,43 @@ const MovieDetails = () => {
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        console.log(`Fetching details for ${type} with ID: ${id}`);
+        
         const data = await getMovieDetails(id, type);
+        console.log('Movie details response:', data);
+        
+        if (!data) {
+          throw new Error('No data received from API');
+        }
         setMovie(data);
         
         const similar = await getSimilarMovies(id, type);
-        setSimilarMovies(similar.results.slice(0, 6));
+        console.log('Similar movies response:', similar);
+        
+        if (similar && similar.results) {
+          setSimilarMovies(similar.results.slice(0, 6));
+        }
       } catch (err) {
-        setError('Failed to load movie details');
+        console.error('Error fetching movie details:', err);
+        setError(err.message || 'Failed to load movie details. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMovieDetails();
+    if (id && type) {
+      fetchMovieDetails();
+    } else {
+      setError('Missing movie ID or type');
+      setLoading(false);
+    }
   }, [id, type]);
 
   if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  if (error) return <div className="text-red-500 text-center mt-8">{error}</div>;
-  if (!movie) return null;
+  if (error) return <div className="text-red-500 text-center mt-8 p-4 bg-red-100 rounded-lg">{error}</div>;
+  if (!movie) return <div className="text-center mt-8">No movie data available</div>;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
