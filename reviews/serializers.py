@@ -18,13 +18,16 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
-    user_id = serializers.ReadOnlyField(source='user.id')
-
+    username = serializers.CharField(source='user.username', read_only=True)
+    
     class Meta:
         model = Review
-        fields = ['id', 'movie_title', 'review_content', 'rating', 'user', 'user_id', 'created_date', 'updated_date']
-        read_only_fields = ['created_date', 'updated_date']
+        fields = ['id', 'username', 'movie_id', 'movie_type', 'rating', 'review_content', 'created_date', 'updated_date']
+        read_only_fields = ['user', 'created_date', 'updated_date']
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
 
     def validate_rating(self, value):
         if not 1 <= value <= 5:

@@ -1,23 +1,25 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getMovieDetails } from '../../services/tmdb';
+import { getMovieDetails, getSimilarMovies } from '../services/tmdb';
+import ReviewSection from '../components/ReviewSection';
 
 const MovieDetails = () => {
   const { id, type } = useParams();
   const navigate = useNavigate();
-  const [movieDetails, setMovieDetails] = useState(null);
+  const [movie, setMovie] = useState(null);
+  const [similarMovies, setSimilarMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
-      setLoading(true);
-      setError(null);
       try {
-        const details = await getMovieDetails(id);
-        setMovieDetails(details);
+        const data = await getMovieDetails(id, type);
+        setMovie(data);
+        
+        const similar = await getSimilarMovies(id, type);
+        setSimilarMovies(similar.results.slice(0, 6));
       } catch (err) {
-        console.error('Error fetching movie details:', err);
         setError('Failed to load movie details');
       } finally {
         setLoading(false);
@@ -25,137 +27,92 @@ const MovieDetails = () => {
     };
 
     fetchMovieDetails();
-  }, [id]);
+  }, [id, type]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
-
-  if (!movieDetails) return null;
+  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (error) return <div className="text-red-500 text-center mt-8">{error}</div>;
+  if (!movie) return null;
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] text-white">
-      {/* Backdrop Image with Gradient Overlay */}
-      <div className="relative h-[60vh]">
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Backdrop Image */}
+      <div className="relative h-96">
         <img
-          src={`https://image.tmdb.org/t/p/original${movieDetails.backdrop_path}`}
-          alt={movieDetails.title}
+          src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
+          alt={movie.title || movie.name}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/80 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 -mt-32 relative z-10">
+      {/* Movie Details */}
+      <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Poster */}
-          <div className="w-full md:w-1/3">
+          <div className="w-full md:w-1/3 lg:w-1/4">
             <img
-              src={`https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`}
-              alt={movieDetails.title}
-              className="rounded-lg shadow-xl"
+              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+              alt={movie.title || movie.name}
+              className="w-full rounded-lg shadow-lg"
             />
           </div>
 
-          {/* Movie Info */}
-          <div className="w-full md:w-2/3">
-            <h1 className="text-4xl font-bold mb-4">{movieDetails.title}</h1>
+          {/* Info */}
+          <div className="w-full md:w-2/3 lg:w-3/4">
+            <h1 className="text-4xl font-bold mb-4">{movie.title || movie.name}</h1>
             
-            {/* Basic Info */}
-            <div className="flex items-center gap-4 mb-4">
-              <span className="text-yellow-400">
-                {movieDetails.vote_average.toFixed(1)}/10
+            <div className="flex items-center space-x-4 mb-4">
+              <span className="bg-yellow-500 text-black px-2 py-1 rounded">
+                {movie.vote_average.toFixed(1)}
               </span>
-              <span>{new Date(movieDetails.release_date).getFullYear()}</span>
-              <span>{movieDetails.runtime} min</span>
+              <span>{new Date(movie.release_date || movie.first_air_date).getFullYear()}</span>
+              {movie.runtime && <span>{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>}
             </div>
 
-            {/* Genres */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {movieDetails.genres.map(genre => (
-                <span
-                  key={genre.id}
-                  className="bg-[#1A1A1A] px-3 py-1 rounded-full text-sm"
-                >
+            <div className="flex flex-wrap gap-2 mb-4">
+              {movie.genres.map(genre => (
+                <span key={genre.id} className="bg-gray-700 px-3 py-1 rounded-full text-sm">
                   {genre.name}
                 </span>
               ))}
             </div>
 
-            {/* Overview */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">Overview</h2>
-              <p className="text-gray-300">{movieDetails.overview}</p>
-            </div>
+            <p className="text-gray-300 mb-8">{movie.overview}</p>
 
             {/* Cast */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Cast</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {movieDetails.credits.cast.slice(0, 8).map(actor => (
-                  <div key={actor.id} className="text-center">
-                    <img
-                      src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
-                      alt={actor.name}
-                      className="w-full rounded-lg mb-2"
-                    />
-                    <p className="font-semibold">{actor.name}</p>
-                    <p className="text-sm text-gray-400">{actor.character}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Crew */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Crew</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {movieDetails.credits.crew
-                  .filter(person => ['Director', 'Writer', 'Producer'].includes(person.job))
-                  .slice(0, 8)
-                  .map(person => (
+            {movie.credits?.cast && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">Cast</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {movie.credits.cast.slice(0, 4).map(person => (
                     <div key={person.id} className="text-center">
                       <img
-                        src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                        src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
                         alt={person.name}
-                        className="w-full rounded-lg mb-2"
+                        className="w-24 h-24 rounded-full mx-auto mb-2"
                       />
-                      <p className="font-semibold">{person.name}</p>
-                      <p className="text-sm text-gray-400">{person.job}</p>
+                      <p className="font-medium">{person.name}</p>
+                      <p className="text-sm text-gray-400">{person.character}</p>
                     </div>
                   ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Similar Movies */}
-            {movieDetails.similar && movieDetails.similar.results.length > 0 && (
+            {/* Crew */}
+            {movie.credits?.crew && (
               <div className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">Similar Movies</h2>
+                <h2 className="text-2xl font-bold mb-4">Crew</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {movieDetails.similar.results.slice(0, 4).map(movie => (
-                    <div
-                      key={movie.id}
-                      className="cursor-pointer"
-                      onClick={() => navigate(`/movie/${movie.id}`)}
-                    >
+                  {movie.credits.crew.slice(0, 4).map(person => (
+                    <div key={person.id} className="text-center">
                       <img
-                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                        alt={movie.title}
-                        className="w-full rounded-lg mb-2"
+                        src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
+                        alt={person.name}
+                        className="w-24 h-24 rounded-full mx-auto mb-2"
                       />
-                      <p className="font-semibold">{movie.title}</p>
+                      <p className="font-medium">{person.name}</p>
+                      <p className="text-sm text-gray-400">{person.job}</p>
                     </div>
                   ))}
                 </div>
@@ -163,6 +120,32 @@ const MovieDetails = () => {
             )}
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <ReviewSection movieId={id} movieType={type} />
+
+        {/* Similar Movies */}
+        {similarMovies.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">Similar {type === 'movie' ? 'Movies' : 'TV Shows'}</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {similarMovies.map(movie => (
+                <div
+                  key={movie.id}
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/movie/${movie.id}/${type}`)}
+                >
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    alt={movie.title || movie.name}
+                    className="w-full rounded-lg shadow-lg hover:opacity-75 transition-opacity"
+                  />
+                  <p className="mt-2 font-medium">{movie.title || movie.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

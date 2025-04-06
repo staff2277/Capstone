@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from rest_framework import viewsets, filters, status, generics
+from django.shortcuts import render, get_object_or_404
+from rest_framework import viewsets, filters, status, generics, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -26,18 +26,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     search_fields = ['movie_title', 'review_content']
     ordering_fields = ['rating', 'created_date']
     ordering = ['-created_date']
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Review.objects.all()
-        movie_title = self.request.query_params.get('movie_title', None)
-        rating = self.request.query_params.get('rating', None)
-        
-        if movie_title:
-            queryset = queryset.filter(movie_title__icontains=movie_title)
-        if rating:
-            queryset = queryset.filter(rating=rating)
-            
-        return queryset
+        movie_id = self.request.query_params.get('movie_id')
+        movie_type = self.request.query_params.get('movie_type')
+        if movie_id and movie_type:
+            return Review.objects.filter(movie_id=movie_id, movie_type=movie_type)
+        return Review.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -78,3 +74,23 @@ class ReviewViewSet(viewsets.ModelViewSet):
             "average_rating": round(avg_rating, 2) if avg_rating else None,
             "review_count": review_count
         })
+
+    @action(detail=False, methods=['get'])
+    def my_reviews(self, request):
+        reviews = Review.objects.filter(user=request.user)
+        serializer = self.get_serializer(reviews, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def movie_reviews(self, request):
+        movie_id = request.query_params.get('movie_id')
+        movie_type = request.query_params.get('movie_type')
+        if not movie_id or not movie_type:
+            return Response(
+                {'error': 'movie_id and movie_type are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        reviews = Review.objects.filter(movie_id=movie_id, movie_type=movie_type)
+        serializer = self.get_serializer(reviews, many=True)
+        return Response(serializer.data)
