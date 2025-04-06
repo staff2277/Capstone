@@ -1,13 +1,28 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useState } from 'react';
+import AuthModal from './AuthModal';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
+  };
 
   if (!isAuthenticated) {
-    // Redirect to login page with the return URL
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return (
+      <>
+        {children}
+        <AuthModal
+          isOpen={!isAuthenticated}
+          onClose={() => setIsAuthModalOpen(false)}
+          onAuthSuccess={handleAuthSuccess}
+        />
+      </>
+    );
   }
 
   return children;

@@ -19,7 +19,7 @@ const Navbar = () => {
   };
 
   const handleAuthSuccess = () => {
-    // This function is no longer used in the new implementation
+    setIsAuthModalOpen(false);
   };
 
   const handleLogout = async () => {
@@ -32,7 +32,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="flex justify-between z-20 items-center max-sm:pt-5 sm:pt-8 absolute w-full   sm:px-[50px]  max-sm:px-[20px]">
+      <div className="flex justify-between z-20 items-center max-sm:pt-5 sm:pt-8 absolute w-full sm:px-[50px] max-sm:px-[20px]">
         <div className="flex items-center gap-2">
           <img
             className="sm:w-[90px] max-sm:w-[50px]"
@@ -48,7 +48,7 @@ const Navbar = () => {
         <nav
           className={clsx({
             "border-[#363636] ": location.pathname === "/moviesXshows",
-            "flex bg-[#0F0F0F] px-[50px] mr-[120px] max-lg:hidden gap-3 border-[4px] border-[#1F1F1F]  py-[10px] rounded-xl items-center": true,
+            "flex bg-[#0F0F0F] px-[50px] mr-[120px] max-lg:hidden gap-3 border-[4px] border-[#1F1F1F] py-[10px] rounded-xl items-center": true,
           })}
         >
           <Link
@@ -128,15 +128,15 @@ const Navbar = () => {
               </div>
             </div>
           ) : (
-            <Link
-              to="/login"
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
               Login
-            </Link>
+            </button>
           )}
         </div>
-        <div className="lg:hidden  max-sm:px-[10px] max-sm:py-[20px] max-lg:px-[20px] max-lg:py-[25px] rounded-xl">
+        <div className="lg:hidden max-sm:px-[10px] max-sm:py-[20px] max-lg:px-[20px] max-lg:py-[25px] rounded-xl">
           <span className="">
             <img
               src="/static/images/menu.svg"

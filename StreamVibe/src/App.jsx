@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import MovieDetails from "./pages/MovieDetails";
 import { AuthProvider } from '../components/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
-import Login from './pages/Login';
 
 const App = () => {
   let [moviesData, setMoviesData] = useState([]);
@@ -173,7 +172,6 @@ const App = () => {
           />
           <Route path="/support" element={<Support moviesData={moviesData} />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
-          <Route path="/login" element={<Login />} />
           <Route
             path="/movie/:id/:type"
             element={

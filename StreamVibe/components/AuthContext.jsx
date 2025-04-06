@@ -1,46 +1,61 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
+// Use the same origin as your React development server
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const verifyToken = async (token) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify/`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Token verification failed');
+      }
+
+      const userResponse = await fetch(`${API_BASE_URL}/auth/user/`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+
+      const userData = await userResponse.json();
+      setIsAuthenticated(true);
+      setUser(userData);
+      setError(null);
+      return true;
+    } catch (error) {
+      console.error('Token verification error:', error);
+      localStorage.removeItem('token');
+      setIsAuthenticated(false);
+      setUser(null);
+      setError(error.message);
+      return false;
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Verify token with backend
-      fetch('http://localhost:8000/api/auth/verify/', {
-        headers: {
-          'Authorization': `Token ${token}`
-        }
-      })
-      .then(response => {
-        if (response.ok) {
-          setIsAuthenticated(true);
-          // Fetch user data
-          return fetch('http://localhost:8000/api/auth/user/', {
-            headers: {
-              'Authorization': `Token ${token}`
-            }
-          });
-        }
-        throw new Error('Invalid token');
-      })
-      .then(response => response.json())
-      .then(userData => {
-        setUser(userData);
-      })
-      .catch(error => {
-        console.error('Token verification failed:', error);
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      verifyToken(token);
     } else {
       setLoading(false);
     }
@@ -48,13 +63,15 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/', {
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
         },
-        body: JSON.stringify({ email, password }),
         credentials: 'include',
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
@@ -64,11 +81,11 @@ export const AuthProvider = ({ children }) => {
 
       const data = await response.json();
       localStorage.setItem('token', data.token);
-      setIsAuthenticated(true);
-      setUser(data.user);
+      await verifyToken(data.token);
       return data;
     } catch (error) {
       console.error('Login error:', error);
+      setError(error.message);
       throw error;
     }
   };
@@ -77,16 +94,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch('http://localhost:8000/api/auth/logout/', {
+        await fetch(`${API_BASE_URL}/auth/logout/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
           },
           credentials: 'include',
         });
       }
     } catch (error) {
       console.error('Logout error:', error);
+      setError(error.message);
     } finally {
       localStorage.removeItem('token');
       setIsAuthenticated(false);
@@ -94,8 +114,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getCookie = (name) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, loading, login, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      loading, 
+      error, 
+      login, 
+      logout,
+      verifyToken 
+    }}>
       {children}
     </AuthContext.Provider>
   );

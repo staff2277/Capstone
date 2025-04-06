@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useAuth } from './AuthContext';
+
+// Use the same origin as your React development server
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,12 +14,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { login, error: authError } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -24,38 +30,46 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/auth/${isLogin ? 'login' : 'register'}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken'),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          ...(isLogin ? {} : { username: formData.username }),
-        }),
-      });
+      if (isLogin) {
+        await login(formData.email, formData.password);
+      } else {
+        const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Authentication failed');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Registration failed');
+        }
+
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
       }
 
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
       onAuthSuccess();
       onClose();
     } catch (err) {
       console.error('Auth error:', err);
-      setError(err.message || 'Failed to connect to server. Please try again.');
+      if (err.message.includes('Failed to fetch')) {
+        setError('Unable to connect to the server. Please check if the server is running.');
+      } else {
+        setError(err.message || 'Failed to connect to server. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper function to get CSRF token from cookies
   const getCookie = (name) => {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -88,9 +102,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           </button>
         </div>
 
-        {error && (
+        {(error || authError) && (
           <div className="mb-4 p-3 bg-red-500 text-white rounded">
-            {error}
+            {error || authError}
           </div>
         )}
 
@@ -135,15 +149,19 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
           <button
             type="submit"
-            className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors"
+            disabled={isLoading}
+            className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors disabled:opacity-50"
           >
-            {isLogin ? 'Sign In' : 'Sign Up'}
+            {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
           </button>
         </form>
 
         <div className="mt-4 text-center">
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError('');
+            }}
             className="text-gray-400 hover:text-white"
           >
             {isLogin

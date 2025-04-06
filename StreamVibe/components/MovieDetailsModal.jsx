@@ -3,6 +3,7 @@ import { getMovieDetails } from '../services/tmdb';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthModal from './AuthModal';
+import { useAuth } from './AuthContext';
 
 const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
   const [movieDetails, setMovieDetails] = useState(null);
@@ -10,6 +11,7 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
   const [error, setError] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!movieId) return;
@@ -31,7 +33,6 @@ const MovieDetailsModal = ({ isOpen, onClose, movieId, type = 'movie' }) => {
   }, [movieId, type]);
 
   const handleViewMore = () => {
-    const isAuthenticated = !!localStorage.getItem('token');
     if (isAuthenticated) {
       navigate(`/movie/${movieId}/${type}`);
       onClose();
