@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
@@ -125,5 +125,34 @@ def logout_view(request):
         logger.error(f"Logout error: {str(e)}")
         return Response(
             {'error': 'An error occurred during logout'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def verify_token(request):
+    try:
+        return Response({'valid': True})
+    except Exception as e:
+        logger.error(f"Token verification error: {str(e)}")
+        return Response(
+            {'error': 'Token verification failed'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user(request):
+    try:
+        user = request.user
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email
+        })
+    except Exception as e:
+        logger.error(f"Get user error: {str(e)}")
+        return Response(
+            {'error': 'Failed to get user data'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         ) 
