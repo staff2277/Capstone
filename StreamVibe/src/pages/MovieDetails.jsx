@@ -141,7 +141,11 @@ const MovieDetails = () => {
         </div>
 
         {/* Reviews Section */}
-        <ReviewSection movieId={id} movieType={type} />
+        <ReviewSection 
+          movieId={id} 
+          movieType={type} 
+          movieTitle={movie.title || movie.name} 
+        />
 
         {/* Similar Movies */}
         {similarMovies.length > 0 && (

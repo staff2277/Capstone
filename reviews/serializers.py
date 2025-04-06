@@ -22,7 +22,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Review
-        fields = ['id', 'username', 'movie_id', 'movie_type', 'rating', 'review_content', 'created_date', 'updated_date']
+        fields = ['id', 'username', 'movie_title', 'movie_id', 'movie_type', 'rating', 'review_content', 'created_date', 'updated_date']
         read_only_fields = ['user', 'created_date', 'updated_date']
 
     def create(self, validated_data):

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
-const ReviewSection = ({ movieId, movieType }) => {
+const ReviewSection = ({ movieId, movieType, movieTitle }) => {
   const { isAuthenticated, user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(0);
@@ -31,9 +31,18 @@ const ReviewSection = ({ movieId, movieType }) => {
 
   const fetchReviews = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      // Add Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Token ${token}`;
+      }
+      
       const response = await fetch(
         `http://127.0.0.1:8000/api/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`,
         {
+          headers,
           credentials: 'include', // Include cookies in the request
         }
       );
@@ -77,8 +86,8 @@ const ReviewSection = ({ movieId, movieType }) => {
 
     try {
       const url = editingReview
-        ? `http://127.0.0.1:8000/api/reviews/reviews/${editingReview.id}/`
-        : 'http://127.0.0.1:8000/api/reviews/reviews/';
+        ? `http://127.0.0.1:8000/api/reviews/${editingReview.id}/`
+        : 'http://127.0.0.1:8000/api/reviews/';
       
       const method = editingReview ? 'PUT' : 'POST';
       const csrfToken = getCookie('csrftoken');
@@ -92,12 +101,13 @@ const ReviewSection = ({ movieId, movieType }) => {
           'Authorization': `Token ${token}`,
           'X-CSRFToken': csrfToken,
         },
-        credentials: 'include', // Include cookies in the request
+        credentials: 'include',
         body: JSON.stringify({
           movie_id: movieId,
           movie_type: movieType,
+          movie_title: movieTitle,
           rating,
-          comment,
+          review_content: comment,
         }),
       });
 
@@ -128,7 +138,7 @@ const ReviewSection = ({ movieId, movieType }) => {
     try {
       const csrfToken = getCookie('csrftoken');
       const response = await fetch(
-        `http://127.0.0.1:8000/api/reviews/reviews/${reviewId}/`,
+        `http://127.0.0.1:8000/api/reviews/${reviewId}/`,
         {
           method: 'DELETE',
           headers: {
@@ -155,24 +165,24 @@ const ReviewSection = ({ movieId, movieType }) => {
   const handleEdit = (review) => {
     setEditingReview(review);
     setRating(review.rating);
-    setComment(review.comment);
+    setComment(review.review_content);
   };
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Reviews</h2>
+      <h2 className="text-2xl font-bold mb-4 text-text">Reviews</h2>
       
       {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Rating</label>
+            <label className="block text-sm font-medium mb-2 text-text">Rating</label>
             <div className="flex space-x-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
                   onClick={() => setRating(star)}
-                  className={`text-2xl ${rating >= star ? 'text-yellow-400' : 'text-gray-400'}`}
+                  className={`text-2xl ${rating >= star ? 'text-yellow-400' : 'text-text-muted'}`}
                 >
                   ★
                 </button>
@@ -181,11 +191,11 @@ const ReviewSection = ({ movieId, movieType }) => {
           </div>
           
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Comment</label>
+            <label className="block text-sm font-medium mb-2 text-text">Comment</label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full p-2 border rounded-md bg-gray-800 text-white"
+              className="w-full p-2 border rounded-md bg-background-light text-text"
               rows="4"
               required
             />
@@ -193,29 +203,29 @@ const ReviewSection = ({ movieId, movieType }) => {
           
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="bg-primary hover:bg-primary-dark text-text py-2 px-4 rounded-md transition-colors"
           >
             {editingReview ? 'Update Review' : 'Submit Review'}
           </button>
         </form>
       ) : (
-        <div className="mb-8 text-gray-400">
+        <div className="mb-8 text-text-muted">
           Please log in to submit a review
         </div>
       )}
 
       {error && (
-        <div className="text-red-500 mb-4 p-2 bg-red-100 rounded">
+        <div className="mb-4 p-3 bg-red-500 text-text rounded">
           {error}
         </div>
       )}
 
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div key={review.id} className="border rounded-md p-4">
+          <div key={review.id} className="border border-background-lighter rounded-md p-4 bg-background-light">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <span className="font-medium">{review.username}</span>
+                <span className="font-medium text-text">{review.username}</span>
                 <div className="flex text-yellow-400">
                   {'★'.repeat(review.rating)}
                   {'☆'.repeat(5 - review.rating)}
@@ -225,7 +235,7 @@ const ReviewSection = ({ movieId, movieType }) => {
                 <div className="space-x-2">
                   <button
                     onClick={() => handleEdit(review)}
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-primary hover:text-primary-dark"
                   >
                     Edit
                   </button>
@@ -238,9 +248,9 @@ const ReviewSection = ({ movieId, movieType }) => {
                 </div>
               )}
             </div>
-            <p className="text-gray-300">{review.comment}</p>
-            <div className="text-sm text-gray-400 mt-2">
-              {new Date(review.created_at).toLocaleDateString()}
+            <p className="text-text-muted">{review.review_content}</p>
+            <div className="text-sm text-text-dark mt-2">
+              {new Date(review.created_date).toLocaleDateString()}
             </div>
           </div>
         ))}

@@ -8,6 +8,26 @@ export default {
   important: "#root",
   theme: {
     extend: {
+      colors: {
+        // Primary colors
+        primary: {
+          DEFAULT: '#E50000', // Main red accent
+          dark: '#cc0000',    // Darker red for hover states
+        },
+        // Background colors
+        background: {
+          DEFAULT: '#0F0F0F', // Main background
+          light: '#1A1A1A',   // Slightly lighter background
+          lighter: '#2b2a2a', // Even lighter background
+          card: '#2c2c2c',    // Card background
+        },
+        // Text colors
+        text: {
+          DEFAULT: '#FFFFFF', // White text
+          muted: '#9CA3AF',   // Muted text
+          dark: '#4B5563',    // Dark text
+        },
+      },
       backgroundImage: {
         "transparent-gradient": `
           linear-gradient(0deg, rgba(0,0,0,0.8911939775910365) 2%, rgba(0,0,0,0.8211659663865546) 10%, rgba(0,0,0,0.5438550420168067) 29%, rgba(0,0,0,0.15449929971988796) 70%),
