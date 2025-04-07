@@ -3,7 +3,8 @@ services:
     name: streamvibe-backend
     env: python
     buildCommand: ./render-build.sh
-    startCommand: gunicorn Capstone.wsgi:application
+    startCommand: startCommand: gunicorn Capstone.wsgi:application --bind 0.0.0.0:$PORT
+
     rootDir: .
     envVars:
       - key: DJANGO_DEBUG
@@ -13,9 +14,9 @@ services:
       - key: DJANGO_ALLOWED_HOSTS
         value: .onrender.com
       - key: CORS_ALLOWED_ORIGINS
-        value: https://svibe.netlify.app, https://streamvibe.onrender.com
+        value: https://svibe.netlify.app, https://streamvibe-backend-q0e9.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
-        value: https://svibe.netlify.app, https://streamvibe.onrender.com
+        value: https://svibe.netlify.app, https://streamvibe-backend-q0e9.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: streamvibe-db
