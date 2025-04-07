@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from django.contrib.auth.models import User
 from .models import Review
 from .serializers import ReviewSerializer, UserSerializer
-from django.db.models import Avg
+from django.db.models import Avg, Count
 
 # Create your views here.
 
@@ -36,6 +36,22 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Review.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
+        # Check if user has reached the review limit for this movie
+        movie_id = self.request.data.get('movie_id')
+        movie_type = self.request.data.get('movie_type')
+        
+        if movie_id and movie_type:
+            review_count = Review.objects.filter(
+                user=self.request.user,
+                movie_id=movie_id,
+                movie_type=movie_type
+            ).count()
+            
+            if review_count >= 10:
+                raise serializers.ValidationError(
+                    {"detail": "You have reached the maximum limit of 10 reviews for this movie."}
+                )
+        
         serializer.save(user=self.request.user)
 
     def update(self, request, *args, **kwargs):

@@ -1,7 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Use the same origin as your React development server
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// Use the PythonAnywhere domain for production
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://mustaff2277.pythonanywhere.com/api'
+  : 'http://127.0.0.1:8000/api';
 
 const AuthContext = createContext();
 
@@ -137,7 +139,8 @@ export const AuthProvider = ({ children }) => {
       error, 
       login, 
       logout,
-      verifyToken 
+      verifyToken,
+      API_BASE_URL 
     }}>
       {children}
     </AuthContext.Provider>
