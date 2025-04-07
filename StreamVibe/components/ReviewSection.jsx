@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 
 const ReviewSection = ({ movieId, movieType, movieTitle }) => {
-  const { isAuthenticated, user, API_BASE_URL } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -40,7 +40,7 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
       }
 
       const response = await fetch(
-        `${API_BASE_URL}/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`,
+        `http://127.0.0.1:8000/api/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`,
         {
           headers,
           credentials: "include", // Include cookies in the request
@@ -90,8 +90,8 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
 
     try {
       const url = editingReview
-        ? `${API_BASE_URL}/reviews/${editingReview.id}/`
-        : `${API_BASE_URL}/reviews/`;
+        ? `http://127.0.0.1:8000/api/reviews/${editingReview.id}/`
+        : "http://127.0.0.1:8000/api/reviews/";
 
       const method = editingReview ? "PUT" : "POST";
       const csrfToken = getCookie("csrftoken");
@@ -151,7 +151,7 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
     try {
       const csrfToken = getCookie("csrftoken");
       const response = await fetch(
-        `${API_BASE_URL}/reviews/${reviewId}/`,
+        `http://127.0.0.1:8000/api/reviews/${reviewId}/`,
         {
           method: "DELETE",
           headers: {
@@ -257,13 +257,13 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
                 <div className="space-x-2">
                   <button
                     onClick={() => handleEdit(review)}
-                    className="text-primary hover:text-primary-dark"
+                    className="text-primary hover:text-red-400"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(review.id)}
-                    className="text-red-400 hover:text-red-300"
+                    className="text-primary hover:text-red-400"
                   >
                     Delete
                   </button>

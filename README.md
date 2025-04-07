@@ -1,90 +1,113 @@
-# StreamVibe
+# StreamVibe - Movie Review Platform
 
-StreamVibe is a modern video streaming web application built with React (Vite) for the frontend and Django for the backend. It offers a seamless, high-performance user experience with Tailwind CSS for styling and Framer Motion for animations.
+A full-stack application for reviewing movies, built with Django and React.
 
 ## Features
 
-- **User Authentication** (Login, Signup)
-- **Video Upload & Streaming**
-- **Like & Comment System**
-- **Responsive UI with Tailwind CSS**
-- **Optimized Performance with Vite**
-- **Django Backend API for Data Management**
+- User authentication (login, register, logout)
+- Movie browsing and searching
+- Movie reviews with ratings
+- User profile management
 
+## Tech Stack
 
-### Frontend:
+### Backend
+- Django
+- Django REST Framework
+- PostgreSQL (in production)
+- SQLite (in development)
 
-- **React (Vite)** – Fast and optimized frontend framework
-- **Tailwind CSS** – Utility-first styling framework
-- **Framer Motion** – Smooth animations
+### Frontend
+- React
+- Tailwind CSS
+- Framer Motion
 
-### Backend:
-
-- **Django** – Web framework for handling backend logic
-- **Django Rest Framework (DRF)** – API handling
-- **SQLite** – Default database (can be switched to PostgreSQL/MySQL)
-
-## Installation & Setup
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-- Python & pip
-
-### Clone the Repository
-
-```sh
-git clone https://github.com/yourusername/streamvibe.git
-cd streamvibe
-```
+## Local Development
 
 ### Backend Setup
 
-1. Create a virtual environment:
-   ```sh
-   python -m venv venv
-   source venv/bin/activate
+1. Clone the repository
+2. Create a virtual environment:
    ```
-2. Install dependencies:
-   ```sh
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```
    pip install -r requirements.txt
    ```
-3. Run database migrations:
-   ```sh
+4. Run migrations:
+   ```
    python manage.py migrate
    ```
-4. Start the Django server:
-   ```sh
+5. Start the development server:
+   ```
    python manage.py runserver
    ```
 
 ### Frontend Setup
 
-1. Navigate to the `StreamVibe` directory:
-   ```sh
+1. Navigate to the StreamVibe directory:
+   ```
    cd StreamVibe
    ```
 2. Install dependencies:
-   ```sh
+   ```
    npm install
    ```
-3. Build the frontend:
-   ```sh
-   npm run build
+3. Start the development server:
    ```
-4. Start the development server:
-   ```sh
    npm run dev
    ```
 
-## Deployment
+## Deployment on Render
 
-To deploy StreamVibe, configure Django for production and serve the frontend using a static file server like Nginx or AWS S3.
+### Backend Deployment
 
-## Contributing
+1. Create a Render account at [render.com](https://render.com)
+2. Connect your GitHub repository to Render
+3. Create a new Web Service
+4. Select your repository
+5. Configure the service:
+   - Name: `streamvibe-backend`
+   - Environment: `Python`
+   - Build Command: `./build.sh`
+   - Start Command: `gunicorn Capstone.wsgi:application`
+6. Add environment variables:
+   - `DJANGO_DEBUG`: `False`
+   - `DJANGO_SECRET_KEY`: (Generate a secure key)
+   - `DJANGO_ALLOWED_HOSTS`: `.onrender.com`
+   - `CORS_ALLOWED_ORIGINS`: `https://streamvibe-frontend.onrender.com`
+   - `CSRF_TRUSTED_ORIGINS`: `https://streamvibe-frontend.onrender.com`
+7. Deploy the service
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+### Frontend Deployment
+
+1. Create a new Static Site in Render
+2. Connect your GitHub repository
+3. Configure the build:
+   - Build Command: `npm run build`
+   - Publish Directory: `dist`
+4. Add environment variables:
+   - `VITE_API_URL`: `https://streamvibe-backend.onrender.com/api`
+5. Deploy the site
+
+## API Documentation
+
+### Authentication Endpoints
+
+- `POST /api/auth/register/`: Register a new user
+- `POST /api/auth/login/`: Login a user
+- `POST /api/auth/logout/`: Logout a user
+- `GET /api/auth/user/`: Get current user information
+
+### Review Endpoints
+
+- `GET /api/reviews/movie_reviews/`: Get reviews for a specific movie
+- `POST /api/reviews/`: Create a new review
+- `PUT /api/reviews/{id}/`: Update a review
+- `DELETE /api/reviews/{id}/`: Delete a review
+- `GET /api/reviews/my_reviews/`: Get current user's reviews
 
 ## License
 
