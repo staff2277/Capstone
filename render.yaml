@@ -2,8 +2,9 @@ services:
   - type: web
     name: streamvibe-backend
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn Capstone.wsgi:application
+    buildCommand: ./build.sh
+    startCommand: gunicorn Capstone.wsgi:application --bind 0.0.0.0:$PORT
+    rootDir: .
     envVars:
       - key: DJANGO_DEBUG
         value: False
