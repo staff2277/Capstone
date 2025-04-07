@@ -2,7 +2,7 @@ services:
   - type: web
     name: streamvibe-backend
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: ./render-build.sh
     startCommand: gunicorn Capstone.wsgi:application
     rootDir: .
     envVars:
