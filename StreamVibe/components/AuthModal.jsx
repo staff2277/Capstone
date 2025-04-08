@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from './AuthContext';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../src/config';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
