@@ -12,7 +12,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, error: authError } = useAuth();
+  const { login, register, error: authError } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -31,27 +31,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
-        const response = await fetch(`${API_BASE_URL}/auth/register/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            username: formData.username,
-            email: formData.email,
-            password: formData.password,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Registration failed');
-        }
-
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
+        await register(formData.username, formData.email, formData.password);
       }
 
       onAuthSuccess();
@@ -66,21 +46,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getCookie = (name) => {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
   };
 
   if (!isOpen) return null;
