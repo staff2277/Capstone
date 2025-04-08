@@ -88,6 +88,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (username, email, password) => {
+    try {
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      await verifyToken(data.token);
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(error.message);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -133,7 +162,8 @@ export const AuthProvider = ({ children }) => {
       user, 
       loading, 
       error, 
-      login, 
+      login,
+      register, 
       logout,
       verifyToken 
     }}>
