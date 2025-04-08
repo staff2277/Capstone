@@ -1,7 +1,5 @@
 // API Configuration
-export const API_BASE_URL = window.location.hostname === 'svibe.netlify.app'
-  ? 'https://streamvibe-backend-q0e9.onrender.com/api'
-  : 'http://localhost:8000/api';
+export const API_BASE_URL = 'https://streamvibe-backend-q0e9.onrender.com/api';
 
 // TMDB Configuration
 export const TMDB_API_KEY = '1a2db6584f1bb0b764f1bf445b503d83';
