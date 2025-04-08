@@ -34,6 +34,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         await register(formData.username, formData.email, formData.password);
       }
 
+      // Clear all form fields after successful login/registration
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+      });
+      
       onAuthSuccess();
       onClose();
     } catch (err) {
