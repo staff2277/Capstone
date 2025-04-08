@@ -27,8 +27,13 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-your-secret-key-her
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
 
-# Explicitly set ALLOWED_HOSTS for local development
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+# Explicitly set ALLOWED_HOSTS for local development and production
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',
+    'streamvibe-backend-q0e9.onrender.com'
+]
 
 # Logging configuration
 LOGGING = {
@@ -176,7 +181,14 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,http://127.0.0.1:8000,https://svibe.netlify.app,https://streamvibe-backend-q0e9.onrender.com').split(',')
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://svibe.netlify.app',
+    'https://streamvibe-backend-q0e9.onrender.com'
+]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
@@ -189,7 +201,14 @@ CORS_ALLOW_METHODS = [
 ]
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,http://127.0.0.1:8000,https://svibe.netlify.app,https://streamvibe-backend-q0e9.onrender.com').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://svibe.netlify.app',
+    'https://streamvibe-backend-q0e9.onrender.com'
+]
 
 # Session settings
 SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
