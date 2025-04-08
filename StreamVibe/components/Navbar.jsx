@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import Search from "./Search";
 import AuthModal from "./AuthModal";
-import { useAuth } from './AuthContext';
+import { useAuth } from "./AuthContext";
 
 const Navbar = () => {
   const location = useLocation();
@@ -26,7 +26,7 @@ const Navbar = () => {
     try {
       await logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -130,7 +130,7 @@ const Navbar = () => {
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              className="bg-primary text-white px-4 py-2 rounded hover:bg-red-400"
             >
               Login
             </button>
