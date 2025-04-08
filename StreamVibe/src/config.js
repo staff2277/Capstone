@@ -1,7 +1,7 @@
 // API Configuration
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://streamvibe-backend-q0e9.onrender.com/api'
-  : 'http://127.0.0.1:8000/api';
+  : 'http://localhost:8000/api';
 
 // TMDB Configuration
 export const TMDB_API_KEY = '1a2db6584f1bb0b764f1bf445b503d83';

@@ -19,21 +19,24 @@ def register(request):
         email = request.data.get('email')
         password = request.data.get('password')
 
-        logger.debug(f"Registration attempt for username: {username}, email: {email}")
+        logger.info(f"Registration attempt for username: {username}, email: {email}")
 
         if not all([username, email, password]):
+            logger.warning("Registration failed: Missing required fields")
             return Response(
                 {'error': 'Please provide all required fields'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         if User.objects.filter(username=username).exists():
+            logger.warning(f"Registration failed: Username {username} already exists")
             return Response(
                 {'error': 'Username already exists'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         if User.objects.filter(email=email).exists():
+            logger.warning(f"Registration failed: Email {email} already exists")
             return Response(
                 {'error': 'Email already exists'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -55,7 +58,7 @@ def register(request):
                 'username': user.username,
                 'email': user.email
             }
-        })
+        }, status=status.HTTP_201_CREATED)
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
         return Response(
@@ -71,9 +74,10 @@ def login_view(request):
         email = request.data.get('email')
         password = request.data.get('password')
 
-        logger.debug(f"Login attempt for email: {email}")
+        logger.info(f"Login attempt for email: {email}")
 
         if not all([email, password]):
+            logger.warning("Login failed: Missing email or password")
             return Response(
                 {'error': 'Please provide both email and password'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -90,9 +94,16 @@ def login_view(request):
 
         user = authenticate(username=user.username, password=password)
         if user is None:
-            logger.warning(f"Login failed: Invalid password for user {user.username}")
+            logger.warning(f"Login failed: Invalid password for user {email}")
             return Response(
                 {'error': 'Invalid credentials'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_active:
+            logger.warning(f"Login failed: Inactive user {email}")
+            return Response(
+                {'error': 'Account is inactive'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
@@ -106,7 +117,7 @@ def login_view(request):
                 'username': user.username,
                 'email': user.email
             }
-        })
+        }, status=status.HTTP_200_OK)
     except Exception as e:
         logger.error(f"Login error: {str(e)}")
         return Response(
