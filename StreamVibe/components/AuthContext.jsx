@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken'),
+          'Accept': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({ email, password }),
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken'),
+          'Accept': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({ username, email, password }),
