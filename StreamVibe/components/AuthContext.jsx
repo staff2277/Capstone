@@ -11,13 +11,20 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async (token) => {
     try {
+      console.log('Verifying token with URL:', `${API_BASE_URL}/auth/verify/`);
+      
       const response = await fetch(`${API_BASE_URL}/auth/verify/`, {
         headers: {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin,
         },
+        mode: 'cors',
         credentials: 'include',
       });
+
+      console.log('Token verification response status:', response.status);
 
       if (!response.ok) {
         throw new Error('Token verification failed');
@@ -27,15 +34,21 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin,
         },
+        mode: 'cors',
         credentials: 'include',
       });
+
+      console.log('User data response status:', userResponse.status);
 
       if (!userResponse.ok) {
         throw new Error('Failed to fetch user data');
       }
 
       const userData = await userResponse.json();
+      console.log('User data retrieved successfully:', userData);
       setIsAuthenticated(true);
       setUser(userData);
       setError(null);
@@ -62,22 +75,30 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
+      console.log('Attempting login with URL:', `${API_BASE_URL}/auth/login/`);
+      
       const response = await fetch(`${API_BASE_URL}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Origin': window.location.origin,
         },
+        mode: 'cors',
         credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Login response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Login error response:', errorData);
         throw new Error(errorData.error || 'Login failed');
       }
 
       const data = await response.json();
+      console.log('Login successful:', data);
       localStorage.setItem('token', data.token);
       await verifyToken(data.token);
       return data;
@@ -91,22 +112,30 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, email, password) => {
     try {
       setError(null);
+      console.log('Attempting registration with URL:', `${API_BASE_URL}/auth/register/`);
+      
       const response = await fetch(`${API_BASE_URL}/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Origin': window.location.origin,
         },
+        mode: 'cors',
         credentials: 'include',
         body: JSON.stringify({ username, email, password }),
       });
 
+      console.log('Registration response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Registration error response:', errorData);
         throw new Error(errorData.error || 'Registration failed');
       }
 
       const data = await response.json();
+      console.log('Registration successful:', data);
       localStorage.setItem('token', data.token);
       await verifyToken(data.token);
       return data;
