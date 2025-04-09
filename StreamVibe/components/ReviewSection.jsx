@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { API_BASE_URL } from "../src/config";
 
 const ReviewSection = ({ movieId, movieType, movieTitle }) => {
   const { isAuthenticated, user } = useAuth();
@@ -40,7 +41,7 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
       }
 
       const response = await fetch(
-        `http://127.0.0.1:8000/api/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`,
+        `${API_BASE_URL}/reviews/movie_reviews/?movie_id=${movieId}&movie_type=${movieType}`,
         {
           headers,
           credentials: "include", // Include cookies in the request
@@ -90,8 +91,8 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
 
     try {
       const url = editingReview
-        ? `http://127.0.0.1:8000/api/reviews/${editingReview.id}/`
-        : "http://127.0.0.1:8000/api/reviews/";
+        ? `${API_BASE_URL}/reviews/${editingReview.id}/`
+        : `${API_BASE_URL}/reviews/`;
 
       const method = editingReview ? "PUT" : "POST";
       const csrfToken = getCookie("csrftoken");
@@ -151,7 +152,7 @@ const ReviewSection = ({ movieId, movieType, movieTitle }) => {
     try {
       const csrfToken = getCookie("csrftoken");
       const response = await fetch(
-        `http://127.0.0.1:8000/api/reviews/${reviewId}/`,
+        `${API_BASE_URL}/reviews/${reviewId}/`,
         {
           method: "DELETE",
           headers: {
