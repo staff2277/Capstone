@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useAuth } from './AuthContext';
-import { API_BASE_URL } from '../src/config';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useAuth } from "./AuthContext";
+import { API_BASE_URL } from "../src/config";
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
+    username: "",
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login, register, error: authError } = useAuth();
 
@@ -19,12 +19,12 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
@@ -36,19 +36,23 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
       // Clear all form fields after successful login/registration
       setFormData({
-        username: '',
-        email: '',
-        password: '',
+        username: "",
+        email: "",
+        password: "",
       });
-      
+
       onAuthSuccess();
       onClose();
     } catch (err) {
-      console.error('Auth error:', err);
-      if (err.message.includes('Failed to fetch')) {
-        setError('Unable to connect to the server. Please check if the server is running.');
+      console.error("Auth error:", err);
+      if (err.message.includes("Failed to fetch")) {
+        setError(
+          "Unable to connect to the server. Please check if the server is running."
+        );
       } else {
-        setError(err.message || 'Failed to connect to server. Please try again.');
+        setError(
+          err.message || "Failed to connect to server. Please try again."
+        );
       }
     } finally {
       setIsLoading(false);
@@ -59,15 +63,12 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 p-8 rounded-lg w-full max-w-md">
+      <div className="bg-black-300 p-8 rounded-lg w-full max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">
-            {isLogin ? 'Sign In' : 'Sign Up'}
+            {isLogin ? "Sign In" : "Sign Up"}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
             ✕
           </button>
         </div>
@@ -122,7 +123,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             disabled={isLoading}
             className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors disabled:opacity-50"
           >
-            {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+            {isLoading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
@@ -130,13 +131,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           <button
             onClick={() => {
               setIsLogin(!isLogin);
-              setError('');
+              setError("");
             }}
             className="text-gray-400 hover:text-white"
           >
             {isLogin
               ? "Don't have an account? Sign Up"
-              : 'Already have an account? Sign In'}
+              : "Already have an account? Sign In"}
           </button>
         </div>
       </div>
@@ -150,4 +151,4 @@ AuthModal.propTypes = {
   onAuthSuccess: PropTypes.func.isRequired,
 };
 
-export default AuthModal; 
+export default AuthModal;
