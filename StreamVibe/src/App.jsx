@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import MovieDetails from "./pages/MovieDetails";
 import { AuthProvider } from '../components/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
+import PageLoader from "../components/PageLoader";
 
 const App = () => {
   let [moviesData, setMoviesData] = useState([]);
@@ -22,6 +23,8 @@ const App = () => {
   let [seriesGenreName, setSeriesGenreName] = useState([]);
   let [seriesGenreId, setSeriesGenreId] = useState([]);
 
+  let [isLoading, setIsLoading] = useState(true);
+
   const options = {
     method: "GET",
     headers: {
@@ -32,115 +35,69 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetch("https://api.themoviedb.org/3/genre/movie/list?language=en", options)
-      .then((res) => res.json())
-      .then((data) => {
-        const genreId = data.genres.map((value) => value.id);
-        setMovieGenreId(genreId);
-        const genreName = data.genres.map((value) => value.name);
-        setMovieGenreName(genreName);
-      })
-      .catch((err) => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    fetch("https://api.themoviedb.org/3/genre/tv/list?language=en", options)
-      .then((res) => res.json())
-      .then((data) => {
-        const genreId = data.genres.map((value) => value.id);
-        setSeriesGenreId(genreId);
-        const genreName = data.genres.map((value) => value.name);
-        setSeriesGenreName(genreName);
-      })
-      .catch((err) => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    async function fetchMultipleSeries() {
+    async function loadAllData() {
       try {
-        const request = seriesGenreId.map((genreId) =>
-          fetch(
-            `https://api.themoviedb.org/3/discover/tv?api_key=${options.headers.Authorization}&with_genres=${genreId}`,
-            options
-          ).then((res) => res.json())
-        );
+        const [movieGenresRes, tvGenresRes, trendingMoviesRes, trendingTvRes] = await Promise.all([
+          fetch("https://api.themoviedb.org/3/genre/movie/list?language=en", options).then(res => res.json()),
+          fetch("https://api.themoviedb.org/3/genre/tv/list?language=en", options).then(res => res.json()),
+          fetch("https://api.themoviedb.org/3/trending/movie/week?language=en-US", options).then(res => res.json()),
+          fetch("https://api.themoviedb.org/3/trending/tv/week?language=en-US", options).then(res => res.json()),
+        ]);
 
-        const results = await Promise.all(request);
-        const topTen = await results.map((value) => {
-          return value.results.splice(6, 4);
-        });
+        const mGenreIds = movieGenresRes.genres.map((value) => value.id);
+        const mGenreNames = movieGenresRes.genres.map((value) => value.name);
+        setMovieGenreId(mGenreIds);
+        setMovieGenreName(mGenreNames);
 
-        const categoryData = await results.map((value) => {
-          setSeriesTopTen(() => value.results.splice(1, 4));
-          return value.results.splice(6, 4);
-        });
+        const sGenreIds = tvGenresRes.genres.map((value) => value.id);
+        const sGenreNames = tvGenresRes.genres.map((value) => value.name);
+        setSeriesGenreId(sGenreIds);
+        setSeriesGenreName(sGenreNames);
 
-        setSeriesGenreData(categoryData);
-        setSeriesTopTen(topTen);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchMultipleSeries();
-  }, [movieGenreId.length]);
+        setMoviesData(trendingMoviesRes.results || []);
+        setSeriesData(trendingTvRes.results || []);
 
-  useEffect(() => {
-    async function fetchMultiple() {
-      try {
-        const request = movieGenreId.map((genreId) =>
+        const movieRequests = mGenreIds.map((genreId) =>
           fetch(
             `https://api.themoviedb.org/3/discover/movie?api_key=${options.headers.Authorization}&with_genres=${genreId}`,
             options
           ).then((res) => res.json())
         );
 
-        const results = await Promise.all(request);
-        const topTen = await results.map((value) => {
-          return value.results.splice(6, 4);
-        });
+        const seriesRequests = sGenreIds.map((genreId) =>
+          fetch(
+            `https://api.themoviedb.org/3/discover/tv?api_key=${options.headers.Authorization}&with_genres=${genreId}`,
+            options
+          ).then((res) => res.json())
+        );
 
-        const categoryData = await results.map((value) => {
-          setMovieTopTen(() => value.results.splice(1, 4));
-          return value.results.splice(6, 4);
-        });
+        const [movieResults, seriesResults] = await Promise.all([
+          Promise.all(movieRequests),
+          Promise.all(seriesRequests),
+        ]);
 
-        setMovieGenreData(categoryData);
-        setMovieTopTen(topTen);
+        const mTopTen = movieResults.map((value) => value.results.slice(6, 10));
+        const mCategoryData = movieResults.map((value) => value.results.slice(6, 10));
+        setMovieGenreData(mCategoryData);
+        setMovieTopTen(mTopTen);
+
+        const sTopTen = seriesResults.map((value) => value.results.slice(6, 10));
+        const sCategoryData = seriesResults.map((value) => value.results.slice(6, 10));
+        setSeriesGenreData(sCategoryData);
+        setSeriesTopTen(sTopTen);
       } catch (error) {
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     }
-    fetchMultiple();
-  }, [movieGenreId.length]);
 
-  useEffect(() => {
-    fetch(
-      "https://api.themoviedb.org/3/trending/movie/week?language=en-US",
-      options
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        const poster = data.results.map((value) => value);
-        setMoviesData(poster);
-      })
-      .catch((err) => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    fetch(
-      "https://api.themoviedb.org/3/trending/tv/week?language=en-US",
-      options
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        const poster = data.results.map((value) => value);
-        setSeriesData(poster);
-      })
-      .catch((err) => console.error(err));
+    loadAllData();
   }, []);
 
   return (
     <AuthProvider>
+      <PageLoader isLoading={isLoading} />
       <div className="text-white">
         <Navbar />
         <Routes>
