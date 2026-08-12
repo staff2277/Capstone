@@ -24,13 +24,13 @@ const PageLoader = ({ isLoading, onTransitionEnd }) => {
     return () => clearInterval(interval);
   }, [phase]);
 
-  // When loading finishes, jump to 100% then start dissolve
+  // When loading finishes, smoothly animate progress to 100% before starting dissolve
   useEffect(() => {
     if (!isLoading && phase === "loading") {
       setProgress(100);
       const timer = setTimeout(() => {
         setPhase("dissolving");
-      }, 400);
+      }, 500); // Allow user to see progress bar hit 100% fully
       return () => clearTimeout(timer);
     }
   }, [isLoading, phase]);
