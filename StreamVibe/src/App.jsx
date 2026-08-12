@@ -102,7 +102,9 @@ const App = () => {
           });
         });
 
-        await Promise.all(preloadPromises);
+        const fontPromise = document.fonts ? document.fonts.ready : Promise.resolve();
+
+        await Promise.all([...preloadPromises, fontPromise]);
       } catch (error) {
         console.error(error);
       } finally {
