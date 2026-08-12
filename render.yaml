@@ -3,7 +3,7 @@ services:
     name: streamvibe-backend
     env: python
     buildCommand: ./build.sh
-    startCommand: gunicorn Capstone.wsgi:application --bind 0.0.0.0:$PORT # Corrected command
+    startCommand: gunicorn streamvibe_config.wsgi:application --bind 0.0.0.0:$PORT # Corrected command
 
     rootDir: .
     envVars:

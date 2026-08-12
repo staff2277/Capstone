@@ -1,5 +1,5 @@
 """
-WSGI config for Capstone project.
+WSGI config for streamvibe_config project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -15,6 +15,6 @@ load_dotenv()
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Capstone.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'streamvibe_config.settings')
 
 application = get_wsgi_application()
