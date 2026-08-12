@@ -85,6 +85,24 @@ const App = () => {
         const sCategoryData = seriesResults.map((value) => value.results.slice(6, 10));
         setSeriesGenreData(sCategoryData);
         setSeriesTopTen(sTopTen);
+
+        // Preload key images into browser cache before finishing loader
+        const imagePathsToPreload = [
+          ...(trendingMoviesRes.results || []).map((m) => m.poster_path),
+          ...(trendingTvRes.results || []).map((s) => s.poster_path),
+          ...mCategoryData.flat().map((item) => item?.poster_path),
+        ].filter(Boolean);
+
+        const preloadPromises = imagePathsToPreload.map((path) => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.src = `https://image.tmdb.org/t/p/w500${path}`;
+            img.onload = resolve;
+            img.onerror = resolve; // resolve on error so app doesn't hang forever
+          });
+        });
+
+        await Promise.all(preloadPromises);
       } catch (error) {
         console.error(error);
       } finally {
